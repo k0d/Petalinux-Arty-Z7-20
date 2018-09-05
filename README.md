@@ -14,22 +14,22 @@ The project includes the following features by default:
 * USB Host support
 * UIO drivers for onboard switches, buttons and LEDs
 * SSH server
-* Build essentials package group for on-board compilation using gcc, etc. 
+* Build essentials package group for on-board compilation using gcc, etc.
 * HDMI output with kernel mode setting (KMS)
 * HDMI input via UIO drivers
 * U-boot environment variables can be overriden during SD boot by including uEnv.txt
   in the root directory of the SD card (see u-boot documentation).
 
-### Digilent Petalinux Apps 
+### Digilent Petalinux Apps
 
-This project includes the Digilent-apps repository, a set of linux libraries, utilities and demos that are packaged as Petalinux 
+This project includes the Digilent-apps repository, a set of linux libraries, utilities and demos that are packaged as Petalinux
 apps so they can easily be included with Petalinux projects. These apps add various board specific funtionality, such as controlling
-GPIO devices and RGB LEDs from the command line. For complete documentation on these apps, see the repository documentation: 
+GPIO devices and RGB LEDs from the command line. For complete documentation on these apps, see the repository documentation:
 https://github.com/Digilent/digilent-apps.
 
 ## Known Issues
 
-* The console on the attached monitor will shutdown and not resume if left inactive. This can be prevented by running the following at 
+* The console on the attached monitor will shutdown and not resume if left inactive. This can be prevented by running the following at
   a terminal after boot.
 ```
 echo -e '\033[9;0]' > /dev/tty1
@@ -38,7 +38,7 @@ echo -e '\033[9;0]' > /dev/tty1
   118 MHz (potentially slightly more based on horizontal blanking intervals). The output pipeline will automatically reject
   resolutions this high (this is accomplished with a device tree property), however the input pipeline cannot do the same. If a
   resolution with a pixel clock greater than 118 MHz is provided on the input pipeline, then it will overflow and likely stop
-  working. 
+  working.
 * MACHINE_NAME is currently still set to "template". Not sure the ramifications of changing this, but I don't think our boards
   our supported. For now just leave this as is until we have time to explore the effects of changing this value.
 * We have experienced issues with petalinux when it is not installed to /opt/pkg/petalinux/. Digilent highly recommends installing petalinux
@@ -47,7 +47,7 @@ echo -e '\033[9;0]' > /dev/tty1
   need to be explored and notes should be added to this guide. If this is causing a problem, then u-boot will likely crash or not successfully
   load the kernel. The workaround for now is to use SD rootfs.
 * Ethernet PHY reset is not indicated correctly in the device tree. This means it will not be used by the linux and u-boot drivers. This does not
-  seem to be causing any known functionality issues. 
+  seem to be causing any known functionality issues.
 * To support using the generic UIO driver we have to override the bootargs. This is sloppy, and we should explore modifying our
   demos/libraries to use modprobe to load the uio driver as a module and set the of_id=generic-uio parameter at load time. Then
   we could stop overriding the bootargs in the device tree and also keep the generic uio driver as a module (which is petalinux's
@@ -56,15 +56,15 @@ echo -e '\033[9;0]' > /dev/tty1
 ## Quick-Start Guide
 
 This guide will walk you through some basic steps to get you booted into Linux and rebuild the Petalinux project. After completing it, you should refer
-to the Petalinux Reference Guide (UG1144) from Xilinx to learn how to do more useful things with the Petalinux toolset. Also, refer to the Known Issues 
+to the Petalinux Reference Guide (UG1144) from Xilinx to learn how to do more useful things with the Petalinux toolset. Also, refer to the Known Issues
 section above for a list of problems you may encounter and work arounds.
 
-This guide assumes you are using Ubuntu 16.04.3 LTS. Digilent highly recommends using Ubuntu 16.04.x LTS, as this is what we are most familiar with, and 
+This guide assumes you are using Ubuntu 16.04.3 LTS. Digilent highly recommends using Ubuntu 16.04.x LTS, as this is what we are most familiar with, and
 cannot guarantee that we will be able to replicate problems you encounter on other Linux distributions.
 
 ### Install the Petalinux tools
 
-Digilent has put together this quick installation guide to make the petalinux installation process more convenient. Note it is only tested on Ubuntu 16.04.3 LTS. 
+Digilent has put together this quick installation guide to make the petalinux installation process more convenient. Note it is only tested on Ubuntu 16.04.3 LTS.
 
 First install the needed dependencies by opening a terminal and running the following:
 
@@ -72,7 +72,7 @@ First install the needed dependencies by opening a terminal and running the foll
 sudo -s
 apt-get install tofrodos gawk xvfb git libncurses5-dev tftpd zlib1g-dev zlib1g-dev:i386  \
                 libssl-dev flex bison chrpath socat autoconf libtool texinfo gcc-multilib \
-                libsdl1.2-dev libglib2.0-dev screen pax 
+                libsdl1.2-dev libglib2.0-dev screen pax libtool-bin xterm diffstat wget net-tools
 reboot
 ```
 
@@ -127,7 +127,7 @@ and download the most recent .bsp file available there for the version of Petali
 
 ### Generate project
 
-If you have obtained the project source directly from github, then you should simply _cd_ into the Petalinux project directory. If you have downloaded the 
+If you have obtained the project source directly from github, then you should simply _cd_ into the Petalinux project directory. If you have downloaded the
 .bsp, then you must first run the following command to create a new project.
 
 ```
@@ -139,7 +139,7 @@ This will create a new petalinux project in your current working directory, whic
 
 ### Run the pre-built image from SD
 
-#### Note: The pre-built images are only included with the .bsp release. If you cloned the project source directly, skip this section. 
+#### Note: The pre-built images are only included with the .bsp release. If you cloned the project source directly, skip this section.
 
 1. Obtain a microSD card that has its first partition formatted as a FAT filesystem.
 2. Copy _pre-built/linux/images/BOOT.BIN_ and _pre-built/linux/images/image.ub_ to the first partition of your SD card.
@@ -159,23 +159,23 @@ petalinux-build
 petalinux-package --boot --force --fsbl images/linux/zynq_fsbl.elf --fpga images/linux/Arty_Z7_20_wrapper.bit --u-boot
 ```
 
-### Boot the newly built files from SD 
+### Boot the newly built files from SD
 
 Follow the same steps as done with the pre-built files, except use the BOOT.BIN and image.ub files found in _images/linux_.
 
-### Configure SD rootfs 
+### Configure SD rootfs
 
-This project is initially configured to have the root file system (rootfs) existing in RAM. This configuration is referred to as "initramfs". A key 
-aspect of this configuration is that changes made to the files (for example in your /home/root/ directory) will not persist after the board has been reset. 
+This project is initially configured to have the root file system (rootfs) existing in RAM. This configuration is referred to as "initramfs". A key
+aspect of this configuration is that changes made to the files (for example in your /home/root/ directory) will not persist after the board has been reset.
 This may or may not be desirable functionality.
 
 Another side affect of initramfs is that if the root filesystem becomes too large (which is common if you add many features with "petalinux-config -c rootfs)
  then the system may experience poor performance (due to less available system memory). Also, if the uncompressed rootfs is larger than 128 MB, then booting
  with initramfs will fail unless you make modifications to u-boot (see note at the end of the "Managing Image Size" section of UG1144).
 
-For those that want file modifications to persist through reboots, or that require a large rootfs, the petalinux system can be configured to instead use a 
-filesystem that exists on the second partition of the microSD card. This will allow all 512 MiB of memory to be used as system memory, and for changes that 
-are made to it to persist in non-volatile storage. To configure the system to use SD rootfs, write the generated root fs to the SD, and then boot the system, 
+For those that want file modifications to persist through reboots, or that require a large rootfs, the petalinux system can be configured to instead use a
+filesystem that exists on the second partition of the microSD card. This will allow all 512 MiB of memory to be used as system memory, and for changes that
+are made to it to persist in non-volatile storage. To configure the system to use SD rootfs, write the generated root fs to the SD, and then boot the system,
 do the following:
 
 Start by running petalinux-config and setting the following option to "SD":
@@ -200,13 +200,13 @@ Replace that line with the following before saving and closing system-user.dtsi:
 
 Then run petalinux-build to build your system. After the build completes, your rootfs image will be at images/linux/rootfs.ext4.
 
-Format an SD card with two partitions: The first should be at least 500 MB and be FAT formatted. The second needs to be at least 1.5 GB (3 GB is preferred) and 
-formatted as ext4. The second partition will be overwritten, so don't put anything on it that you don't want to lose. If you are uncertain how to do this in 
+Format an SD card with two partitions: The first should be at least 500 MB and be FAT formatted. The second needs to be at least 1.5 GB (3 GB is preferred) and
+formatted as ext4. The second partition will be overwritten, so don't put anything on it that you don't want to lose. If you are uncertain how to do this in
 Ubuntu, gparted is a well documented tool that can make the process easy.
 
 Copy _images/linux/BOOT.BIN_ and _images/linux/image.ub_ to the first partition of your SD card.
 
-Identify the /dev/ node for the second partition of your SD card using _lsblk_ at the command line. It will likely take the form of /dev/sdX2, where X is 
+Identify the /dev/ node for the second partition of your SD card using _lsblk_ at the command line. It will likely take the form of /dev/sdX2, where X is
 _a_,_b_,_c_,etc.. Then run the following command to copy the filesystem to the second partition:
 
 #### Warning! If you use the wrong /dev/ node in the following command, you will overwrite your computer's file system. BE CAREFUL
@@ -242,7 +242,7 @@ This section is only relevant for those who wish to upstream their work or versi
 Note the project should be released configured as initramfs for consistency, unless there is very good reason to release it with SD rootfs.
 
 ```
-petalinux-package --prebuilt --clean --fpga images/linux/Arty_Z7_20_wrapper.bit -a images/linux/image.ub:images/image.ub 
+petalinux-package --prebuilt --clean --fpga images/linux/Arty_Z7_20_wrapper.bit -a images/linux/image.ub:images/image.ub
 petalinux-build -x distclean
 petalinux-build -x mrproper
 petalinux-package --bsp --force --output ../releases/Petalinux-Arty-Z7-20-20XX.X-X.bsp -p ./
@@ -253,5 +253,3 @@ git commit
 git push
 ```
 Finally, open a browser and go to github to push your .bsp as a release.
-
-
